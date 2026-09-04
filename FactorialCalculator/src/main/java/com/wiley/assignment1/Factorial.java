@@ -33,13 +33,26 @@ public class Factorial {
 		- All code should be inside the placeholders below.
 		*/
 
-		//YOUR CODE STARTS HERE
+		// accept a number from the user and store the value in an instance variable `num`
+		 String input = scanner.nextLine();
 
-		return -1;
+		 // try to store it in an int variable
+		 // will succeed if is int, if not will throw exception.
+		 try {
+			 num = Integer.parseInt(input);
+		 } catch (NumberFormatException e) {
+			 this.printStream.print("Invalid entry. Please enter an integer between 1 and 10, inclusive.");
+			 return -1;
+		 }
 
-		//YOUR CODE ENDS HERE
-		 
-			
+		 // in case of invalid input
+		 if (num < 1 || num > 10) {
+			this.printStream.print("Invalid entry. Please enter an integer between 1 and 10, inclusive.");
+			return -1;
+		 }
+
+		 // if the input value is valid, return the number input by the user
+		return num;
 	 }
 	
 	 
@@ -52,11 +65,11 @@ public class Factorial {
 		*/
 		 
 		int result = 1;
-		//YOUR CODE STARTS HERE
 
- 
+		for (int n = 1; n <= num; n++) {
+			result *= n;
+		}
 
-		//YOUR CODE ENDS HERE
 		this.printStream.print("The Factorial is: " + result);		
 		
 	 }
