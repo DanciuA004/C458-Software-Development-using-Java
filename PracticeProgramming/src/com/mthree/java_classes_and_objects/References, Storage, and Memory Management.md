@@ -1,0 +1,136 @@
+# C458 Software Development using Java
+
+## Java Classes and Objects
+
+### References, Storage, and Memory Management
+
+#### Programs and Memory
+
+When your program is running, its data must be stored in memory. There are two main areas of memory that the JVM uses to store the data associated with your program: the stack and the heap. As your program runs, each method (including main) gets some memory on the stack — the memory that each method gets is called a stack frame.  
+Any new object created by your program will get some memory on the heap. We'll look at the details of what ends up on the stack and heap, and why things end up on one or the other, below.
+
+##### The Stack
+
+The stack is a memory structure that is managed by the JVM.  
+The stack is a Last-In, First-Out (LIFO) data structure. In a stack data structure, new items are added to the top — this is known as pushing the item onto the stack. Items are also removed from the top of the stack — this is known as popping the item off the stack. This means that the last thing you pushed onto the stack will be the first thing to get popped off, hence the last-in, first-out description of this data structure.   
+
+ > For a visual reference, think of the stack of plates at a restaurant buffet — as the plates are added, they pile up on the previously-added plates. When you get to the buffet, you take the plate that is on top, which was the last one that was added.
+
+Rather than adding plates to a stack at the buffet, the JVM adds what is known as a stack frame for each method that gets executed in your program. The first stack frame for your program always contains the information for your main method.
+
+The stack frame contains the following information:
+
+- Values of all primitive type variables declared in the method 
+- The heap location of any non-primitive types declared in the method 
+- Values of the parameters passed into the method 
+- JVM bookkeeping information about the method
+
+The good news is that the JVM takes care of all the stack manipulation, so you do not have to do anything with it in your code. However, the workings of the stack and heap are very common interview questions.  
+In addition, knowing the basic functionality is foundational for learning more advanced concepts and will give you a better understanding of how your program interacts with the JVM and operating system and how you can optimize your code.
+
+Let's take a look at an example. Consider the following method:
+
+        public void method(int parameter) {
+            int x = 5;
+            int y = parameter;
+        }
+
+Now let's suppose we call this method with a parameter of 10, like this:
+
+        method(10);
+
+Here we have a method that takes an `int parameter` and then creates two more integers. The calling code invokes the method, passing a value of 10 to the `parameter` variable. Because these are primitive types, the data and the variable name are stored on the stack.  
+The `method()` entry on the stack represents the bookkeeping information the JVM needs to keep track of the execution environment. The four values beneath the Stack label below represent the stack frame for `method()`:
+
+![The Stack](images/memory.svg)
+
+When `method()` is done executing, the memory on the stack will be popped off of it, which will cause `y`, `x`, `parameter`, and `method()` to be deleted from memory.  
+If `method()` is invoked again later in the program, the JVM will build a new stack frame and push it onto the stack. In this case, for primitive types such as `int`, notice that the data value is physically copied to the new memory space.  
+If we were to change the value of parameter, it would not affect the value of `y` because `y` and `parameter` are contained in two separate memory spaces in the stack frame.
+
+##### The Heap
+
+The heap is an area where chunks of memory are allocated to store user-defined types. Unlike the stack, things can be removed from and added to the heap in any order, hence the word "heap" because it's a heap of data.  
+Whereas the items on the stack, particularly value types, are stored in a single segment of memory, the heap requires two segments of memory:
+
+- On the heap is the actual data, which is some type of object. 
+- On the stack is a pointer to the actual data. The value of this pointer is the address location in memory where the data on the heap can be found.
+
+This concept is confusing to the beginning developer: why not have only a stack? The main reason is efficiency.  
+While a simple type, such as int, only requires a single piece of data, we have already seen that classes can contain many members and different pieces of data. When we pass something small, like an int, between methods, it is fine to just make a copy of that data, but what if you had a Customer object that also contained invoice history and other pieces of information? What if you had a list of all the Customer objects in the state of Ohio? You could potentially have tens of thousands of pieces of data inside a single object!  
+If we were to create a complete copy of all this data every time we called a method, we would have tens of thousands more calls and our computer would quickly run out of memory!
+
+So in the case of reference types, such as classes, it is more efficient to store the object once on the heap with the reference on the stack. When you pass a class object to another variable, only the reference is copied. Thus, all variables that point to the same object on the heap are linked.  
+So, if you make a change to the heap object using one variable, the others, being pointers to the same object, also "see" the update.
+
+Consider the following class `Person`. It has two data fields, `name`, and `age`. This class will be a blueprint to create as many `Person` objects as we may need in our program.
+
+        public class Person {    
+        private String name;    
+        private int age;
+        
+            public String getName() {        
+                return name;    
+            }     
+           
+            public void setName(String name) {
+                 this.name = name;    
+            }     
+           
+            public int getAge() {        
+                return age;    
+            }     
+         
+            public void setAge(int age) {
+                 this.age = age;
+            }
+        }
+
+Let's go ahead and create one:
+
+        Person p = new Person();
+
+We have already discussed constructors a bit and we saw that they are just special methods that are called when we create new objects of a type.  
+When the `new` keyword and one of the constructors of a class are used together, the JVM creates a new object of that particular type on the heap and hands us back a reference to this object.  
+Because `name` and `age` are fields, they will be auto-initialized. `name` is a `String`, which is not a primitive type, so it will receive a null value. `age` is an `int`, which has a default value of 0.
+
+Right now, the stack and heap look like this:
+
+![The Heap 1](images/heap1.svg)
+
+The variable `p` is simply a reference to the actual `Person` object on the heap. The value stored in `p` is the heap location of the newly created `Person` object.
+
+Now, if we were to define a second variable, and assign the value of `p` to it, the JVM would only copy the pointer, not create a second object on the heap. Illustrated, it would look like this:
+
+        Person p2 = p;
+
+After the statement is executed, the stack would look like this.  
+Notice that `p` and `p2` point to the same `Person` object on the heap:
+
+![The Heap 2](images/heap2.svg)
+
+At this point, if we were to assign a name using the `p` variable and an age using the `p2` variable, because they are pointing to one single object, they would both see the data updates:
+
+        p.setName("Mary");
+        p2.setAge(19);
+        
+        System.out.println(p.getAge()); // prints 19
+        System.out.println(p2.getName()); // prints Mary
+
+![The Heap 3](images/heap3.svg)
+
+To recap, the difference between user-defined (reference) types and primitive types can be summarized as follows:
+
+- Primitive types are stored on the stack. When data is passed by value, a copy of the data is made, such that changes to the value do not affect the other copies.
+- User-defined types are stored on the heap with only a reference stored on the stack. When a reference is passed to a method, a copy of the reference is made. This means that the object on the heap now has one more reference pointing to it and that changes to the data made through any reference to that object are seen by all other references to that object.
+
+Remember that Java is a pass-by-value language. This means that a copy is made of any value passed into a method. In the case of primitive types, the actual value of the variable (for example, 5 if the variable is an int) is copied into a new memory location on the stack. In the case of user-defined types, a copy of the reference value is made and stored into a new memory location on the stack.
+
+#### Garbage Collection
+
+As we have discussed, Java is a managed language. This means that the programmer is not responsible for allocating and releasing memory manually.  
+In Java, we simply create objects and/or native data types as we need them in our programs and the JVM takes care of releasing all memory as appropriate. As discussed previously, all memory allocated on the stack is automatically released when a method completes and its associated stack frame is destroyed.
+
+Memory used by objects on the heap is eligible for garbage collection when there are no more references to the object.  
+We can explicitly take a reference away from an object on the heap by setting the reference to null. Because the reference variables are stored on the stack, they will go away when their respective stack frames go away (i.e., when their enclosing method returns), which also removes the references from the object to which they point.  
+This process is called garbage collection and the component responsible for doing this is called the garbage collector. Periodically, the garbage collector will sift through the objects on the heap and check to see if they are still being referenced on the stack. If they aren't, they will be marked for cleanup and removed from memory.

@@ -74,6 +74,7 @@ public class RockPaperScissors {
 
         // Checking the overall winner
         String winner = " ";
+
         if (winsUser > winsComputer) {
             winner = "User wins!";
         } else if (winsComputer > winsUser) {
@@ -85,9 +86,11 @@ public class RockPaperScissors {
         System.out.println("\nThe overall winner is: " + winner);
         System.out.println("\nDo you want to play again (y/n)?");
         String loop = scanner.next();
+
         if (loop.equals("y")) {
             game(random, scanner);
         }
+
         System.out.println("Thanks for playing!");
     }
 }
